@@ -2,10 +2,35 @@
 <!DOCTYPE html>
 <html lang="he">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
   <meta charset="UTF-8" />
   <title>מחשבון פרסי טורניר פוקר</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
+  
+
+<style>
+  @media screen and (max-width: 600px) {
+    body {
+      font-size: 14px;
+      padding: 10px;
+    }
+    input, select, button {
+      font-size: 14px;
+    }
+    table {
+      font-size: 13px;
+    }
+    th, td {
+      padding: 6px;
+    }
+  }
+
+    td, th {
+      max-width: 100px;
+      white-space: nowrap;
+    }
+
     body {
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       direction: rtl;
@@ -104,14 +129,14 @@
     window.onload = toggleFields;
 
     function getPrizeDistribution(players) {
-  if (players <= 8) return [65, 35];
-  if (players <= 12) return [50, 30, 20];
-  if (players <= 17) return [34, 26, 27, 13];
-  if (players <= 24) return [34, 26, 20, 13, 7];
-  if (players <= 35) return [34, 26, 16, 12, 8, 4];
-  if (players <= 44) return [32, 24, 14, 11, 9, 6, 4];
-  return [32, 22, 14, 10, 8, 6, 5, 3];
-}
+      if (players <= 8) return [65, 35];
+      if (players <= 12) return [50, 30, 20];
+      if (players <= 17) return [34, 26, 27, 13];
+      if (players <= 24) return [34, 26, 20, 13, 7];
+      if (players <= 35) return [34, 26, 16, 12, 8, 4];
+      if (players <= 44) return [32, 24, 14, 10, 8, 6, 6];
+      return [32, 22, 12, 9, 7, 6, 6, 6];
+    }
 
     function calculatePrizes() {
       const title = document.getElementById("tournamentTitle").value;
@@ -136,10 +161,10 @@
       html += `<p>קופת פרסים: ₪${prizePool}</p>`;
       if (bountyPart > 0) {
         const totalBounty = players * bountyPart;
-        html += `<p>באונטי: ₪${bountyPart} על כל הדחה | סה"כ קופת באונטי: ₪${totalBounty}</p>`;
+        html += `<p>באונטי: ${bountyPart} ₪ על כל הדחה | סה"כ קופת באונטי: ₪${totalBounty}</p>`;
       }
 
-      html += "<table>";
+      html += "<div style="overflow-x:auto;"><table>";
       if (type === "bounty") {
         html += `<tr><th>מקום</th><th>שם זוכה</th><th>אחוז</th><th>מהקופה</th><th>מס' הדחות</th><th>באונטי</th><th>סה"כ</th></tr>`;
       } else {
@@ -150,16 +175,16 @@
         const place = i + 1;
         const prize = Math.round(prizePool * percent / 100);
         if (type === "bounty") {
-          html += `<tr><td>${place}</td><td contenteditable="true"></td><td>${percent}%</td><td>₪ ${prize}</td>
+          html += `<tr><td>${place}</td><td contenteditable="true"></td><td>${percent}%</td><td>${prize} ₪</td>
             <td><input id="ko_${place}" type="number" min="0" value="0" oninput="updateTotal(${place}, ${prize}, ${bountyPart})" style="width:60px;"></td>
             <td id="bounty_${place}">₪ 0</td>
-            <td id="total_${place}">₪ ${prize}</td></tr>`;
+            <td id="total_${place}">${prize} ₪</td></tr>`;
         } else {
-          html += `<tr><td>${place}</td><td contenteditable="true"></td><td>${percent}%</td><td>₪ ${prize}</td></tr>`;
+          html += `<tr><td>${place}</td><td contenteditable="true"></td><td>${percent}%</td><td>${prize} ₪</td></tr>`;
         }
       });
 
-      html += "</table>";
+      html += "</table></div>";
       document.getElementById("results").innerHTML = html;
     }
 
@@ -170,5 +195,60 @@
       document.getElementById("total_" + place).innerText = "₪ " + (prize + bounty);
     }
   </script>
+
+
+<button onclick="prepareScreenshot('before')">📄 מצב צילום לפני פרסום</button>
+<button onclick="prepareScreenshot('after')">📄 מצב צילום אחרי פרסום</button>
+<button onclick="resetView()">🔁 חזרה למצב עריכה</button>
+
+<script>
+  function prepareScreenshot(mode) {
+    const rows = document.querySelectorAll("#results table tr");
+
+    rows.forEach((row, index) => {
+      if (index === 0) return;
+      const cells = row.children;
+      if (mode === 'before') {
+        if (cells.length >= 5) {
+          if (cells[4]) cells[4].innerText = "-";
+          if (cells[5]) cells[5].innerText = "-";
+          if (cells[6]) cells[6].innerText = cells[3].innerText;
+        }
+        if (cells[1]) {
+          cells[1].setAttribute("contenteditable", "false");
+          cells[1].style.backgroundColor = "#ffffff";
+        }
+      } else if (mode === 'after') {
+        if (cells[4]) {
+          const input = cells[4].querySelector("input");
+          if (input) cells[4].innerText = input.value || "-";
+        }
+        if (cells[1]) {
+          cells[1].setAttribute("contenteditable", "false");
+          cells[1].style.backgroundColor = "#ffffff";
+        }
+      }
+    });
+
+    // Hide everything except the reset button
+    const allButtons = document.querySelectorAll("button");
+    allButtons.forEach(btn => {
+      if (btn.innerText.includes("חזרה")) {
+        btn.style.display = "inline-block";
+      } else {
+        btn.style.display = "none";
+      }
+    });
+
+    document.body.style.backgroundColor = "#ffffff";
+    document.getElementById("results").style.boxShadow = "none";
+  }
+
+  function resetView() {
+    location.reload(); // reloads the page for a clean reset
+  }
+</script>
+
+
 </body>
 </html>
