@@ -2,30 +2,11 @@
 <!DOCTYPE html>
 <html lang="he">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-
   <meta charset="UTF-8" />
   <title>מחשבון פרסי טורניר פוקר</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-
 <style>
-  @media screen and (max-width: 600px) {
-    body {
-      font-size: 14px;
-      padding: 10px;
-    }
-    input, select, button {
-      font-size: 14px;
-    }
-    table {
-      font-size: 13px;
-    }
-    th, td {
-      padding: 6px;
-    }
-  }
-
     td, th {
       max-width: 100px;
       white-space: nowrap;
@@ -164,7 +145,7 @@
         html += `<p>באונטי: ${bountyPart} ₪ על כל הדחה | סה"כ קופת באונטי: ₪${totalBounty}</p>`;
       }
 
-      html += "<div style="overflow-x:auto;"><table>";
+      html += "<table>";
       if (type === "bounty") {
         html += `<tr><th>מקום</th><th>שם זוכה</th><th>אחוז</th><th>מהקופה</th><th>מס' הדחות</th><th>באונטי</th><th>סה"כ</th></tr>`;
       } else {
@@ -184,7 +165,7 @@
         }
       });
 
-      html += "</table></div>";
+      html += "</table>";
       document.getElementById("results").innerHTML = html;
     }
 
