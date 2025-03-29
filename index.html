@@ -1,235 +1,173 @@
 
 <!DOCTYPE html>
-<html lang="he">
+<html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>מחשבון פרסי טורניר פוקר</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-<style>
-    td, th {
-      max-width: 100px;
-      white-space: nowrap;
-    }
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
     body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      font-family: Arial, sans-serif;
+      background-color: #f0f8ff;
+      padding: 20px;
       direction: rtl;
-      padding: 30px;
-      background-color: #f2f2f2;
+    }
+    h1 {
+      text-align: center;
+      background-color: #ffeb3b;
+      padding: 10px;
+      border-radius: 10px;
+      color: #333;
+    }
+    .form-group {
+      margin: 10px 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
     }
     input, select, button {
-      margin: 8px 0;
-      padding: 10px;
       font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+      padding: 6px;
+      border-radius: 6px;
       width: 100%;
-      max-width: 400px;
-      box-sizing: border-box;
+      max-width: 300px;
     }
     button {
-      background-color: #e74c3c;
+      background-color: #4caf50;
       color: white;
       border: none;
       cursor: pointer;
     }
     button:hover {
-      background-color: #c0392b;
+      background-color: #45a049;
     }
-    #results {
-      margin-top: 30px;
-      background-color: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0px 0px 10px #bbb;
+    .results {
+      margin-top: 20px;
     }
     table {
-      border-collapse: collapse;
       width: 100%;
-      margin-top: 15px;
+      border-collapse: collapse;
+      margin-top: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      background-color: white;
+      border-radius: 12px;
     }
     th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
       text-align: center;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
     }
     th {
-      background-color: #ffeaa7;
+      background-color: #4caf50;
+      color: white;
     }
-    .highlight {
-      background-color: #fab1a0;
+    tr:nth-child(even) td {
+      background-color: #e8f5e9;
+    }
+    .first { background-color: #81c784; font-weight: bold; }
+    .second { background-color: #4dd0e1; }
+    .third { background-color: #64b5f6; }
+    .warning {
+      color: red;
       font-weight: bold;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h2>מחשבון פרסי טורניר פוקר</h2>
+  <h1>מחשבון פרסי טורניר פוקר</h1>
 
-  <label>כותרת טורניר:
-    <input type="text" id="tournamentTitle" placeholder="למשל: טורניר ערב חמישי">
-  </label>
-
-  <label>סוג טורניר:
-    <select id="tournamentType" onchange="toggleFields()">
-      <option value="regular">רגיל</option>
-      <option value="bounty">באונטי</option>
+  <div class="form-group">
+    <label for="type">סוג טורניר:</label>
+    <select id="type" onchange="toggleBountyFields()">
+      <option value="רגיל">רגיל</option>
+      <option value="באונטי">באונטי</option>
     </select>
-  </label>
-
-  <div id="regularFields">
-    <label>סכום כניסה (ש"ח):
-      <input type="number" id="regularBuyIn" min="1" value="100">
-    </label>
   </div>
 
-  <div id="bountyFields" style="display: none;">
-    <label>סכום לקופת פרסים (ש"ח):
-      <input type="number" id="bountyEntry" min="1" value="100">
-    </label>
-    <label>סכום לבאונטי (ש"ח):
-      <input type="number" id="bountyAmount" min="1" value="50">
-    </label>
+  <div class="form-group">
+    <label for="title">כותרת טורניר:</label>
+    <input id="title" type="text" placeholder="למשל: טורניר ערב חמישי" />
   </div>
 
-  <label>מספר משתתפים:
-    <input type="number" id="players" min="2" value="10">
-  </label>
+  <div class="form-group">
+    <label for="entry">סכום כניסה (ש"ח):</label>
+    <input id="entry" type="number" />
+  </div>
 
-  <button onclick="calculatePrizes()">חשב פרסים</button>
+  <div id="bountyFields" style="display:none;">
+    <div class="form-group">
+      <label for="bountyAmount">סכום באונטי לשחקן (ש"ח):</label>
+      <input id="bountyAmount" type="number" />
+    </div>
+    <div class="form-group">
+      <label for="bountyKills">מספר הדחות:</label>
+      <input id="bountyKills" type="number" />
+    </div>
+  </div>
 
-  <div id="results"></div>
+  <div class="form-group">
+    <label for="players">מספר משתתפים:</label>
+    <input id="players" type="number" />
+  </div>
+
+  <div class="form-group">
+    <button onclick="calculate()">חשב פרסים</button>
+  </div>
+
+  <div class="results" id="results"></div>
 
   <script>
-    function toggleFields() {
-      const type = document.getElementById("tournamentType").value;
-      document.getElementById("bountyFields").style.display = type === "bounty" ? "block" : "none";
-      document.getElementById("regularFields").style.display = type === "regular" ? "block" : "none";
+    function toggleBountyFields() {
+      const isBounty = document.getElementById("type").value === "באונטי";
+      document.getElementById("bountyFields").style.display = isBounty ? "block" : "none";
     }
 
-    window.onload = toggleFields;
+    function calculate() {
+      const prizeTable = [
+        { min: 3, max: 7, prizes: [65, 35] },
+        { min: 8, max: 12, prizes: [50, 30, 20] },
+        { min: 13, max: 17, prizes: [36, 26, 21, 17] },
+        { min: 18, max: 24, prizes: [34, 25, 18, 13, 10] },
+        { min: 25, max: 33, prizes: [32, 23, 17, 13, 9, 6] },
+        { min: 34, max: 42, prizes: [30, 21, 16, 12, 9, 7, 5] },
+        { min: 43, max: 50, prizes: [30, 21, 15, 11, 8, 6, 5, 4] },
+        { min: 51, max: 999, prizes: [29, 20, 15, 10, 8, 6, 5, 4, 3] }
+      ];
 
-    function getPrizeDistribution(players) {
-      if (players <= 8) return [65, 35];
-      if (players <= 12) return [50, 30, 20];
-      if (players <= 17) return [34, 26, 27, 13];
-      if (players <= 24) return [34, 26, 20, 13, 7];
-      if (players <= 35) return [34, 26, 16, 12, 8, 4];
-      if (players <= 44) return [32, 24, 14, 10, 8, 6, 6];
-      return [32, 22, 12, 9, 7, 6, 6, 6];
-    }
-
-    function calculatePrizes() {
-      const title = document.getElementById("tournamentTitle").value;
-      const type = document.getElementById("tournamentType").value;
+      const type = document.getElementById("type").value;
+      const title = document.getElementById("title").value || "טורניר";
+      const entry = parseFloat(document.getElementById("entry").value);
       const players = parseInt(document.getElementById("players").value);
+      const bounty = type === "באונטי" ? parseFloat(document.getElementById("bountyAmount").value) : 0;
+      const kills = type === "באונטי" ? parseInt(document.getElementById("bountyKills").value) : 0;
 
-      let prizePart = 0;
-      let bountyPart = 0;
-
-      if (type === "bounty") {
-        prizePart = parseFloat(document.getElementById("bountyEntry").value);
-        bountyPart = parseFloat(document.getElementById("bountyAmount").value);
-      } else {
-        prizePart = parseFloat(document.getElementById("regularBuyIn").value);
+      const row = prizeTable.find(r => players >= r.min && players <= r.max);
+      if (!row || isNaN(entry) || isNaN(players) || (type === "באונטי" && (isNaN(bounty) || isNaN(kills)))) {
+        document.getElementById("results").innerHTML = "<div class='warning'>יש למלא את כל השדות כנדרש.</div>";
+        return;
       }
 
-      const prizePool = players * prizePart;
-      const distribution = getPrizeDistribution(players);
-      if (!distribution) return;
+      const pool = (type === "באונטי" ? (entry - bounty) : entry) * players;
+      const bountyTotal = bounty * kills;
 
-      let html = `<h3 style="text-align:center">${title || "תוצאות הטורניר"} – ${players} משתתפים</h3>`;
-      html += `<p>קופת פרסים: ₪${prizePool}</p>`;
-      if (bountyPart > 0) {
-        const totalBounty = players * bountyPart;
-        html += `<p>באונטי: ${bountyPart} ₪ על כל הדחה | סה"כ קופת באונטי: ₪${totalBounty}</p>`;
+      let html = `<h2 style="text-align:center">${title} – ${players} משתתפים</h2>`;
+      html += `<h3 style="text-align:center">קופת פרסים: ${pool.toLocaleString()} ₪</h3>`;
+      if (type === "באונטי") {
+        html += `<h3 style="text-align:center">באונטי: ${bountyTotal.toLocaleString()} ₪ (${kills} × ${bounty} ש"ח)</h3>`;
       }
 
-      html += "<table>";
-      if (type === "bounty") {
-        html += `<tr><th>מקום</th><th>שם זוכה</th><th>אחוז</th><th>מהקופה</th><th>מס' הדחות</th><th>באונטי</th><th>סה"כ</th></tr>`;
-      } else {
-        html += `<tr><th>מקום</th><th>שם זוכה</th><th>אחוז</th><th>סכום (ש"ח)</th></tr>`;
-      }
-
-      distribution.forEach((percent, i) => {
-        const place = i + 1;
-        const prize = Math.round(prizePool * percent / 100);
-        if (type === "bounty") {
-          html += `<tr><td>${place}</td><td contenteditable="true"></td><td>${percent}%</td><td>${prize} ₪</td>
-            <td><input id="ko_${place}" type="number" min="0" value="0" oninput="updateTotal(${place}, ${prize}, ${bountyPart})" style="width:60px;"></td>
-            <td id="bounty_${place}">₪ 0</td>
-            <td id="total_${place}">${prize} ₪</td></tr>`;
-        } else {
-          html += `<tr><td>${place}</td><td contenteditable="true"></td><td>${percent}%</td><td>${prize} ₪</td></tr>`;
-        }
+      html += "<table><tr><th>מקום</th><th>אחוז</th><th>סכום (ש"ח)</th></tr>";
+      row.prizes.forEach((p, i) => {
+        const amount = Math.round(pool * p / 100);
+        const cls = i === 0 ? "first" : i === 1 ? "second" : i === 2 ? "third" : "";
+        html += `<tr class="${cls}"><td>${i + 1}</td><td>${p}%</td><td>${amount.toLocaleString()} ₪</td></tr>`;
       });
-
       html += "</table>";
+
       document.getElementById("results").innerHTML = html;
     }
-
-    function updateTotal(place, prize, bountyValue) {
-      const ko = parseInt(document.getElementById("ko_" + place).value) || 0;
-      const bounty = ko * bountyValue;
-      document.getElementById("bounty_" + place).innerText = "₪ " + bounty;
-      document.getElementById("total_" + place).innerText = "₪ " + (prize + bounty);
-    }
   </script>
-
-
-<button onclick="prepareScreenshot('before')">📄 מצב צילום לפני פרסום</button>
-<button onclick="prepareScreenshot('after')">📄 מצב צילום אחרי פרסום</button>
-<button onclick="resetView()">🔁 חזרה למצב עריכה</button>
-
-<script>
-  function prepareScreenshot(mode) {
-    const rows = document.querySelectorAll("#results table tr");
-
-    rows.forEach((row, index) => {
-      if (index === 0) return;
-      const cells = row.children;
-      if (mode === 'before') {
-        if (cells.length >= 5) {
-          if (cells[4]) cells[4].innerText = "-";
-          if (cells[5]) cells[5].innerText = "-";
-          if (cells[6]) cells[6].innerText = cells[3].innerText;
-        }
-        if (cells[1]) {
-          cells[1].setAttribute("contenteditable", "false");
-          cells[1].style.backgroundColor = "#ffffff";
-        }
-      } else if (mode === 'after') {
-        if (cells[4]) {
-          const input = cells[4].querySelector("input");
-          if (input) cells[4].innerText = input.value || "-";
-        }
-        if (cells[1]) {
-          cells[1].setAttribute("contenteditable", "false");
-          cells[1].style.backgroundColor = "#ffffff";
-        }
-      }
-    });
-
-    // Hide everything except the reset button
-    const allButtons = document.querySelectorAll("button");
-    allButtons.forEach(btn => {
-      if (btn.innerText.includes("חזרה")) {
-        btn.style.display = "inline-block";
-      } else {
-        btn.style.display = "none";
-      }
-    });
-
-    document.body.style.backgroundColor = "#ffffff";
-    document.getElementById("results").style.boxShadow = "none";
-  }
-
-  function resetView() {
-    location.reload(); // reloads the page for a clean reset
-  }
-</script>
-
-
 </body>
 </html>
